@@ -1,8 +1,8 @@
 {
   "version": 2,
   "name": "edu-discover-frontend",
-  "buildCommand": "cd artifacts/college-discovery && pnpm install && pnpm run build",
-  "outputDirectory": "artifacts/college-discovery/dist/public",
+  "buildCommand": "pnpm install && pnpm run build",
+  "outputDirectory": "dist/public",
   "installCommand": "pnpm install",
   "framework": "vite",
   "rewrites": [
@@ -12,6 +12,7 @@
     }
   ],
   "env": {
-    "VITE_API_URL": "https://edu-discover-api.onrender.com"
+    "VITE_API_URL": "https://edu-discover-api.onrender.com",
+    "VITE_CLERK_PUBLISHABLE_KEY": "pk_test_ZnVubnktYmVkYnVnLTY2LmNsZXJrLmFjY291bnRzLmRldiQ"
   }
 }
