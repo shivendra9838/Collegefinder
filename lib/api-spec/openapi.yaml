@@ -1,0 +1,913 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: College Discovery Platform API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: colleges
+    description: College operations
+  - name: compare
+    description: College comparison
+  - name: predict
+    description: College predictor tool
+  - name: reviews
+    description: College reviews
+  - name: qa
+    description: Q&A Discussion board
+  - name: saved
+    description: Saved colleges and comparisons (auth required)
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /colleges:
+    get:
+      operationId: listColleges
+      tags: [colleges]
+      summary: List and search colleges with filters
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: location
+          in: query
+          schema:
+            type: string
+        - name: minFees
+          in: query
+          schema:
+            type: number
+        - name: maxFees
+          in: query
+          schema:
+            type: number
+        - name: course
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 12
+      responses:
+        "200":
+          description: List of colleges
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CollegeListResponse"
+
+  /colleges/locations:
+    get:
+      operationId: getCollegeLocations
+      tags: [colleges]
+      summary: Get all unique college locations for filter
+      responses:
+        "200":
+          description: List of locations
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  locations:
+                    type: array
+                    items:
+                      type: string
+                required:
+                  - locations
+
+  /colleges/courses:
+    get:
+      operationId: getCollegeCourses
+      tags: [colleges]
+      summary: Get all unique courses for filter
+      responses:
+        "200":
+          description: List of courses
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  courses:
+                    type: array
+                    items:
+                      type: string
+                required:
+                  - courses
+
+  /colleges/stats:
+    get:
+      operationId: getCollegeStats
+      tags: [colleges]
+      summary: Platform-wide stats (total colleges, avg rating, etc.)
+      responses:
+        "200":
+          description: Platform stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CollegeStats"
+
+  /colleges/{id}:
+    get:
+      operationId: getCollege
+      tags: [colleges]
+      summary: Get college detail
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: College detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CollegeDetail"
+        "404":
+          description: Not found
+
+  /colleges/{id}/courses:
+    get:
+      operationId: getCollegeCoursesList
+      tags: [colleges]
+      summary: Get courses offered by a college
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Courses list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  courses:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Course"
+                required:
+                  - courses
+
+  /colleges/{id}/reviews:
+    get:
+      operationId: getCollegeReviews
+      tags: [colleges]
+      summary: Get reviews for a college
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Reviews list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reviews:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Review"
+                required:
+                  - reviews
+
+  /questions:
+    get:
+      operationId: listQuestions
+      tags: [qa]
+      summary: List questions with optional college filter
+      parameters:
+        - name: collegeId
+          in: query
+          schema:
+            type: integer
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 15
+      responses:
+        "200":
+          description: Questions list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuestionListResponse"
+    post:
+      operationId: createQuestion
+      tags: [qa]
+      summary: Post a new question
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateQuestionBody"
+      responses:
+        "201":
+          description: Question created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuestionSummary"
+
+  /questions/{id}:
+    get:
+      operationId: getQuestion
+      tags: [qa]
+      summary: Get a question with its answers
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Question detail with answers
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuestionDetail"
+        "404":
+          description: Not found
+
+  /questions/{id}/answers:
+    post:
+      operationId: createAnswer
+      tags: [qa]
+      summary: Post an answer to a question
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAnswerBody"
+      responses:
+        "201":
+          description: Answer created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Answer"
+
+  /compare:
+    post:
+      operationId: compareColleges
+      tags: [compare]
+      summary: Get college data for comparison
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CompareRequest"
+      responses:
+        "200":
+          description: Colleges for comparison
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CompareResponse"
+
+  /predict:
+    post:
+      operationId: predictColleges
+      tags: [predict]
+      summary: Predict admission chances based on rank and exam
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PredictRequest"
+      responses:
+        "200":
+          description: Prediction results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PredictResponse"
+
+  /saved/colleges:
+    get:
+      operationId: getSavedColleges
+      tags: [saved]
+      summary: Get saved colleges for the authenticated user
+      responses:
+        "200":
+          description: Saved colleges list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SavedCollegesResponse"
+        "401":
+          description: Unauthorized
+    post:
+      operationId: saveCollege
+      tags: [saved]
+      summary: Save a college for the authenticated user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveCollegeBody"
+      responses:
+        "201":
+          description: College saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SavedCollege"
+        "401":
+          description: Unauthorized
+        "409":
+          description: Already saved
+
+  /saved/colleges/{collegeId}:
+    delete:
+      operationId: unsaveCollege
+      tags: [saved]
+      summary: Remove a saved college
+      parameters:
+        - name: collegeId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Removed
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not found
+
+  /saved/comparisons:
+    get:
+      operationId: getSavedComparisons
+      tags: [saved]
+      summary: Get saved comparisons for the authenticated user
+      responses:
+        "200":
+          description: Saved comparisons list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SavedComparisonsResponse"
+        "401":
+          description: Unauthorized
+    post:
+      operationId: saveComparison
+      tags: [saved]
+      summary: Save a comparison for the authenticated user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveComparisonBody"
+      responses:
+        "201":
+          description: Comparison saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SavedComparison"
+        "401":
+          description: Unauthorized
+
+  /saved/comparisons/{id}:
+    delete:
+      operationId: deleteSavedComparison
+      tags: [saved]
+      summary: Delete a saved comparison
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not found
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    College:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        location:
+          type: string
+        state:
+          type: string
+        type:
+          type: string
+          enum: [Government, Private, Deemed, Autonomous]
+        rating:
+          type: number
+        totalFees:
+          type: number
+        placementPercentage:
+          type: number
+        avgPackage:
+          type: number
+        established:
+          type: integer
+        imageUrl:
+          type: string
+        coursesCount:
+          type: integer
+        topCourses:
+          type: array
+          items:
+            type: string
+        nirf:
+          type: integer
+          nullable: true
+      required:
+        - id
+        - name
+        - location
+        - state
+        - type
+        - rating
+        - totalFees
+        - placementPercentage
+        - avgPackage
+        - established
+        - imageUrl
+        - coursesCount
+        - topCourses
+
+    CollegeDetail:
+      allOf:
+        - $ref: "#/components/schemas/College"
+        - type: object
+          properties:
+            description:
+              type: string
+            website:
+              type: string
+            accreditation:
+              type: string
+            totalStudents:
+              type: integer
+            facultyCount:
+              type: integer
+            hostelAvailable:
+              type: boolean
+            scholarshipAvailable:
+              type: boolean
+            examAccepted:
+              type: array
+              items:
+                type: string
+          required:
+            - description
+            - website
+            - accreditation
+            - totalStudents
+            - facultyCount
+            - hostelAvailable
+            - scholarshipAvailable
+            - examAccepted
+
+    CollegeListResponse:
+      type: object
+      properties:
+        colleges:
+          type: array
+          items:
+            $ref: "#/components/schemas/College"
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+        totalPages:
+          type: integer
+      required:
+        - colleges
+        - total
+        - page
+        - limit
+        - totalPages
+
+    CollegeStats:
+      type: object
+      properties:
+        totalColleges:
+          type: integer
+        avgRating:
+          type: number
+        avgPlacement:
+          type: number
+        topLocations:
+          type: array
+          items:
+            type: object
+            properties:
+              location:
+                type: string
+              count:
+                type: integer
+            required:
+              - location
+              - count
+      required:
+        - totalColleges
+        - avgRating
+        - avgPlacement
+        - topLocations
+
+    Course:
+      type: object
+      properties:
+        id:
+          type: integer
+        collegeId:
+          type: integer
+        name:
+          type: string
+        duration:
+          type: string
+        fees:
+          type: number
+        seats:
+          type: integer
+        eligibility:
+          type: string
+      required:
+        - id
+        - collegeId
+        - name
+        - duration
+        - fees
+        - seats
+        - eligibility
+
+    Review:
+      type: object
+      properties:
+        id:
+          type: integer
+        collegeId:
+          type: integer
+        reviewerName:
+          type: string
+        rating:
+          type: number
+        comment:
+          type: string
+        category:
+          type: string
+          enum: [Overall, Placements, Faculty, Infrastructure, Campus Life]
+        createdAt:
+          type: string
+      required:
+        - id
+        - reviewerName
+        - rating
+        - comment
+        - category
+        - createdAt
+
+    QuestionSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+        collegeId:
+          type: integer
+        collegeName:
+          type: string
+        authorName:
+          type: string
+        title:
+          type: string
+        body:
+          type: string
+        category:
+          type: string
+        answerCount:
+          type: integer
+        createdAt:
+          type: string
+      required:
+        - id
+        - collegeId
+        - collegeName
+        - authorName
+        - title
+        - body
+        - category
+        - answerCount
+        - createdAt
+
+    Answer:
+      type: object
+      properties:
+        id:
+          type: integer
+        questionId:
+          type: integer
+        authorName:
+          type: string
+        body:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - questionId
+        - authorName
+        - body
+        - createdAt
+
+    QuestionDetail:
+      allOf:
+        - $ref: "#/components/schemas/QuestionSummary"
+        - type: object
+          properties:
+            answers:
+              type: array
+              items:
+                $ref: "#/components/schemas/Answer"
+          required:
+            - answers
+
+    QuestionListResponse:
+      type: object
+      properties:
+        questions:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuestionSummary"
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+        totalPages:
+          type: integer
+      required:
+        - questions
+        - total
+        - page
+        - limit
+        - totalPages
+
+    CreateQuestionBody:
+      type: object
+      properties:
+        collegeId:
+          type: integer
+        authorName:
+          type: string
+        title:
+          type: string
+        body:
+          type: string
+        category:
+          type: string
+          enum: [General, Admissions, Fees, Placements, Campus Life, Courses, Hostel]
+          default: General
+      required:
+        - collegeId
+        - authorName
+        - title
+        - body
+
+    CreateAnswerBody:
+      type: object
+      properties:
+        authorName:
+          type: string
+        body:
+          type: string
+      required:
+        - authorName
+        - body
+
+    CompareRequest:
+      type: object
+      properties:
+        collegeIds:
+          type: array
+          items:
+            type: integer
+          minItems: 2
+          maxItems: 3
+      required:
+        - collegeIds
+
+    CompareResponse:
+      type: object
+      properties:
+        colleges:
+          type: array
+          items:
+            $ref: "#/components/schemas/CollegeDetail"
+      required:
+        - colleges
+
+    PredictRequest:
+      type: object
+      properties:
+        exam:
+          type: string
+          enum: [JEE Main, JEE Advanced, CAT, NEET, GATE, CLAT, XAT]
+        rank:
+          type: integer
+        category:
+          type: string
+          enum: [General, OBC, SC, ST, EWS]
+          default: General
+      required:
+        - exam
+        - rank
+
+    PredictResponse:
+      type: object
+      properties:
+        exam:
+          type: string
+        rank:
+          type: integer
+        category:
+          type: string
+        colleges:
+          type: array
+          items:
+            allOf:
+              - $ref: "#/components/schemas/College"
+              - type: object
+                properties:
+                  admissionChance:
+                    type: string
+                    enum: [High, Medium, Low]
+                  cutoffRank:
+                    type: integer
+                required:
+                  - admissionChance
+                  - cutoffRank
+      required:
+        - exam
+        - rank
+        - category
+        - colleges
+
+    SavedCollege:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        collegeId:
+          type: integer
+        createdAt:
+          type: string
+        college:
+          $ref: "#/components/schemas/College"
+      required:
+        - id
+        - userId
+        - collegeId
+        - createdAt
+        - college
+
+    SavedCollegesResponse:
+      type: object
+      properties:
+        savedColleges:
+          type: array
+          items:
+            $ref: "#/components/schemas/SavedCollege"
+      required:
+        - savedColleges
+
+    SaveCollegeBody:
+      type: object
+      properties:
+        collegeId:
+          type: integer
+      required:
+        - collegeId
+
+    SavedComparison:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        name:
+          type: string
+        collegeIds:
+          type: array
+          items:
+            type: integer
+        createdAt:
+          type: string
+      required:
+        - id
+        - userId
+        - name
+        - collegeIds
+        - createdAt
+
+    SavedComparisonsResponse:
+      type: object
+      properties:
+        savedComparisons:
+          type: array
+          items:
+            $ref: "#/components/schemas/SavedComparison"
+      required:
+        - savedComparisons
+
+    SaveComparisonBody:
+      type: object
+      properties:
+        name:
+          type: string
+        collegeIds:
+          type: array
+          items:
+            type: integer
+          minItems: 2
+          maxItems: 3
+      required:
+        - name
+        - collegeIds

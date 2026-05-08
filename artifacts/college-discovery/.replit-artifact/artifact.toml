@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "EduDiscover"
+version = "1.0.0"
+id = "artifacts/college-discovery"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 23012
+
+[services.development]
+run = "pnpm --filter @workspace/college-discovery run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/college-discovery", "run", "build" ]
+publicDir = "artifacts/college-discovery/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23012"
+BASE_PATH = "/"
