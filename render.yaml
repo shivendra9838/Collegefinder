@@ -11,7 +11,9 @@ services:
       - key: NODE_ENV
         value: production
       - key: PORT
-        value: 10000
+        value: 3000
+      - key: API_PORT
+        value: 3000
       - key: MONGODB_URI
         sync: false
       - key: CLERK_PUBLISHABLE_KEY
