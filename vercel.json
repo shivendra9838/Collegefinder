@@ -4,6 +4,7 @@
   "outputDirectory": "dist",
   "installCommand": "pnpm install",
   "framework": "vite",
+  "rootDirectory": "artifacts/college-discovery",
   "rewrites": [
     {
       "source": "/api/(.*)",
