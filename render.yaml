@@ -12,5 +12,13 @@ services:
         value: production
       - key: PORT
         value: 10000
+      - key: MONGODB_URI
+        sync: false
+      - key: CLERK_PUBLISHABLE_KEY
+        sync: false
+      - key: CLERK_SECRET_KEY
+        sync: false
+      - key: SESSION_SECRET
+        sync: false
     healthCheckPath: /api/health
     autoDeploy: true
