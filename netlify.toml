@@ -1,0 +1,17 @@
+[build]
+  base = "artifacts/college-discovery/"
+  command = "pnpm install && pnpm run build"
+  publish = "dist/public"
+
+[build.environment]
+  VITE_API_URL = "https://collegefinder-hbhk.onrender.com"
+  VITE_CLERK_PUBLISHABLE_KEY = "pk_test_ZnVubnktYmVkYnVnLTY2LmNsZXJrLmFjY291bnRzLmRldiQ"
+
+[[redirects]]
+  from = "/api/*"
+  to = "https://collegefinder-hbhk.onrender.com/api/:splat"
+  status = 200
+  force = true
+
+[context.production.environment]
+  VITE_API_URL = "https://collegefinder-hbhk.onrender.com"
