@@ -8,11 +8,11 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://edu-discover-api.onrender.com/api/$1"
+      "destination": "https://collegefinder-hbhk.onrender.com/api/$1"
     }
   ],
   "env": {
-    "VITE_API_URL": "https://edu-discover-api.onrender.com",
+    "VITE_API_URL": "https://collegefinder-hbhk.onrender.com",
     "VITE_CLERK_PUBLISHABLE_KEY": "pk_test_ZnVubnktYmVkYnVnLTY2LmNsZXJrLmFjY291bnRzLmRldiQ"
   }
 }
