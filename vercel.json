@@ -2,7 +2,7 @@
   "version": 2,
   "name": "edu-discover-frontend",
   "buildCommand": "pnpm install && pnpm run build",
-  "outputDirectory": "dist/public",
+  "outputDirectory": "artifacts/college-discovery/dist/public",
   "installCommand": "pnpm install",
   "framework": "vite",
   "rewrites": [
