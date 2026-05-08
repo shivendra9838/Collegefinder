@@ -70,6 +70,14 @@ app.get("/", (_req, res) => {
   });
 });
 
+app.get("/api/health", (_req, res) => {
+  res.json({
+    status: "ok",
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  });
+});
+
 app.use("/api", router);
 
 export default app;
