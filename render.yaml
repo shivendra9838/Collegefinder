@@ -3,9 +3,9 @@ services:
     name: edu-discover-api
     env: node
     repo: https://github.com/shivendra9838/Collegefinder.git
-    rootDir: artifacts/api-server
-    buildCommand: pnpm run build
-    startCommand: pnpm run start
+    rootDir: .
+    buildCommand: pnpm install && pnpm --filter @workspace/api-server run build
+    startCommand: pnpm --filter @workspace/api-server run start
     plan: free
     envVars:
       - key: NODE_ENV
